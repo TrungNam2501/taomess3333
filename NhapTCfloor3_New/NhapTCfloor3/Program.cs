@@ -1,14 +1,29 @@
+using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.Data.SqlClient;
 using System.Data;
 using System.Text.Json;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddCors();
+builder.Services.AddResponseCompression(opts =>
+{
+    opts.EnableForHttps = true;
+    opts.Providers.Add<BrotliCompressionProvider>();
+    opts.Providers.Add<GzipCompressionProvider>();
+    opts.MimeTypes = ResponseCompressionDefaults.MimeTypes.Concat(new[] { "application/json" });
+});
 
 var app = builder.Build();
 
+app.UseResponseCompression();
 app.UseCors(policy => policy.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader());
-app.UseStaticFiles();
+app.UseStaticFiles(new StaticFileOptions
+{
+    OnPrepareResponse = ctx =>
+    {
+        ctx.Context.Response.Headers.Append("Cache-Control", "public,max-age=604800");
+    }
+});
 
 var machineIPs = new Dictionary<string, string>
 {
@@ -24,7 +39,7 @@ var machineIPs = new Dictionary<string, string>
 
 string GetConnectionString(string ip, string catalog = "mfns")
 {
-    return $"Data Source={ip};Initial Catalog={catalog};User ID=kendakv2;Password=kenda123;TrustServerCertificate=True;Connect Timeout=5";
+    return $"Data Source={ip};Initial Catalog={catalog};User ID=kendakv2;Password=kenda123;TrustServerCertificate=True;Connect Timeout=5;Min Pool Size=2;Max Pool Size=20;Pooling=true";
 }
 
 async Task<List<Dictionary<string, object?>>> QueryAsync(string ip, string sql, string catalog = "mfns")
