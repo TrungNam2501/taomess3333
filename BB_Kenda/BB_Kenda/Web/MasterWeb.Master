@@ -1,0 +1,111 @@
+﻿<%@ Master Language="C#" AutoEventWireup="true" CodeBehind="MasterWeb.master.cs" Inherits="BB_Kenda.Web.MasterWeb" %>
+
+<!DOCTYPE html>
+
+<html>
+<head runat="server">
+    <title>BB Kenda</title>
+    <link rel="icon" href="../Assets/image/KendaLogo.png">
+    <link href="../Assets/Css/bootstrap.min.css" rel="stylesheet" />
+    <link href="../Assets/Css/CssGV123.css" rel="stylesheet" />
+    <link href="../Assets/Script/jquery-ui.css" rel="stylesheet" />
+    <script src="../Assets/master/jquery.min.js"></script>
+    <script src="../Assets/master/bootstrap.min.js"></script>
+    <script src="../Assets/Script/jquery-ui.js"></script>
+
+    <script>
+        function closeMessage() {
+            $("#tbl_Messages").fadeOut(200);
+
+        }
+        function Showmess() {
+            $("#tbl_Messages").fadeIn();
+            $("#tbl_Messages1").css("transform", "scale(1)");
+        }
+    </script>
+
+    <script>
+        function heartBeat() {
+            $.get("KeepSession.ashx?", function (data) { });
+        }
+
+        $(function () {
+            setInterval("heartBeat()", 1000 * 30);
+        });
+
+        function isFloatNumber(e, t) {
+            var n;
+            var r;
+            if (navigator.appName == "Microsoft Internet Explorer" || navigator.appName == "Netscape") {
+                n = t.keyCode;
+                r = 1;
+                if (navigator.appName == "Netscape") {
+                    n = t.charCode;
+                    r = 0
+                }
+            } else {
+                n = t.charCode;
+                r = 0
+            }
+            if (r == 1) {
+                if (!(n >= 48 && n <= 57 || n == 46)) {
+                    t.returnValue = false
+                }
+            } else {
+                if (!(n >= 48 && n <= 57 || n == 0 || n == 46)) {
+                    t.preventDefault()
+                }
+            }
+        }
+    </script>
+    <asp:ContentPlaceHolder ID="head" runat="server">
+    </asp:ContentPlaceHolder>
+</head>
+<body style="background-color: whitesmoke; width: 100%; height: 100%; top: 0; bottom: 0; background-size: cover; background-repeat: no-repeat">
+    <form id="form1" runat="server">
+        <div>
+            <nav class="navbar navbar-inverse">
+                <div class="container-fluid">
+                    <ul class="nav navbar-nav">
+                        <li class="active"><a href="/Web/Home.aspx">Trang Chủ(主界面)</a></li>
+                        <li class="dropdown">
+                            <a class="dropdown-toggle" data-toggle="dropdown" href="#">Tạo MES
+                        <span class="caret"></span>
+                            </a>
+                            <ul class="dropdown-menu">
+                               <%-- <li><a href="/Web/TaoMesThu.aspx">Tạo MES(創建MES)</a></li>--%>
+                               <%-- <li><a href="/Web/Mokhoatem.aspx">Mở khóa tem</a></li>--%>
+                            </ul>
+                        </li>
+                        <li class="dropdown">
+                            <a class="dropdown-toggle" data-toggle="dropdown" href="#">Xem sản lượng
+                        <span class="caret"></span>
+                            </a>
+                            <ul class="dropdown-menu">
+                                <li><a href="/Web/XemMES.aspx">Sản lượng MES Cán Keo</a></li>
+                             <%--   <li><a href="/Web/SanLuongBBFloor2.aspx">Sản lượng MES hóa chất</a></li>--%>
+                            </ul>
+                        </li>
+                        <li class="dropdown">
+                            <a class="dropdown-toggle" data-toggle="dropdown" href="#">Tiêu Chuẩn KEO(膠料基準)
+                        <span class="caret"></span>
+                            </a>
+                            <ul class="dropdown-menu">
+                                <li><a href="/Web/NhapTCfloor3.aspx">Thông số KEO(膠料參數)</a></li>
+                                <%-- <li><a href="/Web/pmt_recipe.aspx">Thông số KEO(膠料參數)</a></li>
+                                <li><a href="/Web/pmt_weight.aspx">Công thức KEO(膠料配方)</a></li>
+                                <li><a href="/Web/pmt_mix.aspx">Thông số máy(機台)</a></li>--%>
+                            </ul>
+                        </li>
+                    </ul>
+                    <ul class="nav navbar-nav navbar-right">
+                        <li style='margin-left: 0px; font-weight: bold; font-family: Arial'><a href="/Web/logout.aspx">Logout</a></li>
+                    </ul>
+                </div>
+            </nav>
+        </div>
+        <asp:ContentPlaceHolder ID="ContentPlaceHolder1" runat="server">
+        </asp:ContentPlaceHolder>
+    </form>
+</body>
+</html>

@@ -1,0 +1,9 @@
+                    string CheckMes3 = "Select Max(mesid) FROM [InTem].[dbo].[KEORE] where factory='V' and mesid like '%" + DauMes + DateTime.Now.ToString("yyyy").Substring(2, 2) + DateTime.Now.ToString("MMdd") + "%' ";
+                    DataTable dtMEsid = cnn.ExecuteQuery186(CheckMes3);
+                    if (dtMEsid.Rows.Count == 1 && dtMEsid.Rows[0][0].ToString().Trim() == "")
+                        mes = DauMes + DateTime.Now.ToString("yyyy").Substring(2, 2) + DateTime.Now.ToString("MMdd") + "0001";
+                    else
+                        mes = DauMes + DateTime.Now.ToString("yyyy").Substring(2, 2) + DateTime.Now.ToString("MMdd") + (int.Parse(dtMEsid.Rows[0][0].ToString().Substring(10, 3)) + 1).ToString("0000");
+
+                    string sql1 = "INSERT INTO [InTem].[dbo].[KEORE] VALUES ('4' , 'V', '" + mes + "','" + shift_id + "','" + recipe + "','" + may + "','" + txtSome.Text.Trim() + "','" + DateTime.Now.ToString("yyyyMMdd") + "', " +
+                           "'" + DateTime.Now.ToString("HH:mm:ss") + "','N', '" + pday + "','" + idGrouplot + "','"+OEM+"')";
