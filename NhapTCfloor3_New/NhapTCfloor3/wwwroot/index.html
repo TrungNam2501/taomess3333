@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NhapTC Floor 3 - Quản lý Phối Phương</title>
+    <link rel="stylesheet" href="css/bootstrap.min.css">
+    <link rel="stylesheet" href="css/app.css">
+</head>
+<body>
+    <nav class="navbar navbar-dark bg-primary px-3">
+        <span class="navbar-brand fw-bold">
+            <img src="images/KendaLogo.png" alt="Kenda" height="30" class="me-2" onerror="this.style.display='none'">
+            NhapTC Floor 3 - Quản lý Phối Phương
+        </span>
+        <span class="text-white small" id="statusIndicator">● Sẵn sàng</span>
+    </nav>
+
+    <div class="container-fluid p-3">
+        <!-- Machine & Recipe Selection -->
+        <div class="row g-2 mb-3 align-items-end">
+            <div class="col-auto">
+                <label class="form-label fw-bold small">机台编号 - Mã số máy</label>
+                <select id="cbMay" class="form-select form-select-sm fw-bold">
+                    <option value="">-- Chọn máy --</option>
+                    <option value="01">Máy V-BB3701</option>
+                    <option value="02">Máy V-BB3702</option>
+                    <option value="03">Máy V-BB3703</option>
+                    <option value="04">Máy V-BB3704</option>
+                    <option value="05">Máy V-BB3705</option>
+                    <option value="06">Máy V-BB3706</option>
+                    <option value="07">Máy V-BB3707</option>
+                    <option value="08">Máy V-BB3708</option>
+                </select>
+            </div>
+            <div class="col-auto">
+                <label class="form-label fw-bold small">搜索 - Tìm kiếm Keo</label>
+                <select id="cbKeo" class="form-select form-select-sm fw-bold" disabled>
+                    <option value="">-- Chọn keo --</option>
+                </select>
+            </div>
+            <div class="col-auto">
+                <button id="btnAdd" class="btn btn-success btn-sm fw-bold" disabled>Thêm Mới (添新)</button>
+            </div>
+            <div class="col-auto">
+                <button id="btnEdit" class="btn btn-warning btn-sm fw-bold" disabled>Chỉnh Sửa (编辑)</button>
+            </div>
+            <div class="col-auto">
+                <button id="btnCopy" class="btn btn-info btn-sm fw-bold" disabled>Copy Recipe</button>
+            </div>
+            <div class="col-auto">
+                <button id="btnSave" class="btn btn-danger btn-sm fw-bold d-none">Lưu (保存)</button>
+            </div>
+            <div class="col-auto">
+                <button id="btnCancel" class="btn btn-secondary btn-sm fw-bold d-none">Hủy</button>
+            </div>
+        </div>
+
+        <!-- Recipe Info Form -->
+        <div class="card mb-3">
+            <div class="card-body p-2">
+                <div class="row g-2">
+                    <div class="col-md-2">
+                        <label class="form-label small fw-bold">配方编号<br>Mã Phối Phương</label>
+                        <input type="text" id="txtMaterCode" class="form-control form-control-sm fw-bold" disabled>
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label small fw-bold">配方名称<br>Tên Phối Phương</label>
+                        <input type="text" id="txtMaterName" class="form-control form-control-sm fw-bold" disabled>
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label small fw-bold">进料最高温度<br>Nhiệt độ vào liệu cao nhất</label>
+                        <input type="number" id="txtMiniTemp" class="form-control form-control-sm fw-bold" disabled>
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label small fw-bold">超温最短排胶时间<br>TG ngắn nhất xả keo quá nhiệt</label>
+                        <input type="number" id="txtMaxTemp" class="form-control form-control-sm fw-bold" disabled>
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label small fw-bold">配方类型<br>Loại Phối Phương</label>
+                        <select id="cbRecipeType" class="form-select form-select-sm fw-bold" disabled>
+                            <option value=""></option>
+                            <option value="1">素炼母胶</option>
+                            <option value="2">混炼胶</option>
+                            <option value="3">加促胶</option>
+                            <option value="4">精炼胶</option>
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label small fw-bold">超时最短排胶时间<br>TG ngắn nhất xả keo quá TG</label>
+                        <input type="number" id="txtMiniTime" class="form-control form-control-sm fw-bold" disabled>
+                    </div>
+                </div>
+                <div class="row g-2 mt-1">
+                    <div class="col-md-2">
+                        <label class="form-label small fw-bold">超温排胶温度<br>Nhiệt độ xả keo quá nhiệt</label>
+                        <input type="number" id="txtOverTemp" class="form-control form-control-sm fw-bold" disabled>
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label small fw-bold">炭黑回收标志<br>Thu hồi Than đen</label>
+                        <div class="form-check mt-1">
+                            <input type="checkbox" id="chkBlackReuse" class="form-check-input" disabled>
+                            <label class="form-check-label small">có/是</label>
+                        </div>
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label small fw-bold">炭黑回收时间<br>TG thu hồi than đen</label>
+                        <input type="number" id="txtReuseTime" class="form-control form-control-sm fw-bold" disabled>
+                    </div>
+                    <div class="col-md-1">
+                        <label class="form-label small fw-bold">三区温度1<br>Nhiệt độ 1</label>
+                        <input type="number" id="txtThreeTemp1" class="form-control form-control-sm fw-bold" disabled>
+                    </div>
+                    <div class="col-md-1">
+                        <label class="form-label small fw-bold">三区温度2<br>Nhiệt độ 2</label>
+                        <input type="number" id="txtThreeTemp2" class="form-control form-control-sm fw-bold" disabled>
+                    </div>
+                    <div class="col-md-1">
+                        <label class="form-label small fw-bold">三区温度3<br>Nhiệt độ 3</label>
+                        <input type="number" id="txtThreeTemp3" class="form-control form-control-sm fw-bold" disabled>
+                    </div>
+                    <div class="col-md-1">
+                        <label class="form-label small fw-bold">挤出机温度<br>Nhiệt độ TSR</label>
+                        <input type="number" id="txtThreeTemp4" class="form-control form-control-sm fw-bold" disabled>
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label small fw-bold">压片温度<br>Nhiệt độ ép tấm</label>
+                        <input type="number" id="txtTablettingTemp" class="form-control form-control-sm fw-bold" disabled>
+                    </div>
+                </div>
+                <div class="row g-2 mt-1">
+                    <div class="col-md-2">
+                        <label class="form-label small fw-bold">修改时间<br>Thời gian sửa</label>
+                        <input type="text" id="txtDefineDate" class="form-control form-control-sm fw-bold" disabled readonly>
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label small fw-bold">使用状态<br>Trạng thái sử dụng</label>
+                        <div class="form-check mt-1">
+                            <input type="checkbox" id="chkEverUsed" class="form-check-input" disabled>
+                            <label class="form-check-label small">có/是</label>
+                        </div>
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label small fw-bold">配方总重<br>Tổng trọng lượng</label>
+                        <input type="number" id="txtTotalWeight" class="form-control form-control-sm fw-bold" disabled>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label small fw-bold">备注 - Ghi chú</label>
+                        <input type="text" id="txtMemNote" class="form-control form-control-sm fw-bold" disabled>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tabs for Weighing & Mixing -->
+        <ul class="nav nav-tabs" id="mainTabs" role="tablist">
+            <li class="nav-item"><a class="nav-link active fw-bold" data-bs-toggle="tab" href="#tabWeigh">称里规程 - Quy trình cân</a></li>
+            <li class="nav-item"><a class="nav-link fw-bold" data-bs-toggle="tab" href="#tabMix">混炼规程 - Quy trình luyện keo</a></li>
+        </ul>
+        <div class="tab-content border border-top-0 p-2">
+            <!-- Weighing Tab -->
+            <div class="tab-pane fade show active" id="tabWeigh">
+                <div class="row g-2">
+                    <div class="col-md-6 col-lg-3">
+                        <h6 class="text-primary fw-bold text-center">炭黑 - Than đen (type 0)</h6>
+                        <div class="table-scroll">
+                            <table class="table table-sm table-bordered table-hover" id="tblWeigh0">
+                                <thead class="table-primary"><tr><th>#</th><th>Động tác</th><th>Vật liệu</th><th>Mã</th><th>KL</th><th>Dung sai</th></tr></thead>
+                                <tbody></tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="col-md-6 col-lg-3">
+                        <h6 class="text-primary fw-bold text-center">油1 - Dầu 1 (type 1)</h6>
+                        <div class="table-scroll">
+                            <table class="table table-sm table-bordered table-hover" id="tblWeigh1">
+                                <thead class="table-primary"><tr><th>#</th><th>Động tác</th><th>Vật liệu</th><th>Mã</th><th>KL</th><th>Dung sai</th></tr></thead>
+                                <tbody></tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="col-md-6 col-lg-3">
+                        <h6 class="text-primary fw-bold text-center">油2 - Dầu 2 (type 2)</h6>
+                        <div class="table-scroll">
+                            <table class="table table-sm table-bordered table-hover" id="tblWeigh2">
+                                <thead class="table-primary"><tr><th>#</th><th>Động tác</th><th>Vật liệu</th><th>Mã</th><th>KL</th><th>Dung sai</th></tr></thead>
+                                <tbody></tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="col-md-6 col-lg-3">
+                        <h6 class="text-primary fw-bold text-center">粉料 - Bột (type 3)</h6>
+                        <div class="table-scroll">
+                            <table class="table table-sm table-bordered table-hover" id="tblWeigh3">
+                                <thead class="table-primary"><tr><th>#</th><th>Động tác</th><th>Vật liệu</th><th>Mã</th><th>KL</th><th>Dung sai</th></tr></thead>
+                                <tbody></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                <div class="row g-2 mt-2">
+                    <div class="col-md-6 col-lg-3">
+                        <h6 class="text-primary fw-bold text-center">油12 - Dầu 12 (type 4)</h6>
+                        <div class="table-scroll">
+                            <table class="table table-sm table-bordered table-hover" id="tblWeigh4">
+                                <thead class="table-primary"><tr><th>#</th><th>Động tác</th><th>Vật liệu</th><th>Mã</th><th>KL</th><th>Dung sai</th></tr></thead>
+                                <tbody></tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="col-md-6 col-lg-3">
+                        <h6 class="text-primary fw-bold text-center">小药 - Ít bột (type 5)</h6>
+                        <div class="table-scroll">
+                            <table class="table table-sm table-bordered table-hover" id="tblWeigh5">
+                                <thead class="table-primary"><tr><th>#</th><th>Động tác</th><th>Vật liệu</th><th>Mã</th><th>KL</th><th>Dung sai</th></tr></thead>
+                                <tbody></tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="col-md-6 col-lg-3">
+                        <h6 class="text-primary fw-bold text-center">胶料 - Cao su (type 6)</h6>
+                        <div class="table-scroll">
+                            <table class="table table-sm table-bordered table-hover" id="tblWeigh6">
+                                <thead class="table-primary"><tr><th>#</th><th>Động tác</th><th>Vật liệu</th><th>Mã</th><th>KL</th><th>Dung sai</th></tr></thead>
+                                <tbody></tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="col-md-6 col-lg-3">
+                        <h6 class="text-primary fw-bold text-center">其他 - Khác (type 7)</h6>
+                        <div class="table-scroll">
+                            <table class="table table-sm table-bordered table-hover" id="tblWeigh7">
+                                <thead class="table-primary"><tr><th>#</th><th>Động tác</th><th>Vật liệu</th><th>Mã</th><th>KL</th><th>Dung sai</th></tr></thead>
+                                <tbody></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- Mixing Tab -->
+            <div class="tab-pane fade" id="tabMix">
+                <div class="table-responsive">
+                    <table class="table table-sm table-bordered table-hover" id="tblMix">
+                        <thead class="table-primary">
+                            <tr>
+                                <th>#</th>
+                                <th>动作 - Động tác</th>
+                                <th>时间 - Thời gian</th>
+                                <th>温度 - Nhiệt độ</th>
+                                <th>功率 - Công suất</th>
+                                <th>能量 - Năng lượng</th>
+                                <th>条件 - Điều kiện</th>
+                                <th>压力 - Áp lực</th>
+                                <th>转速 - Tốc độ</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast notification -->
+    <div class="position-fixed bottom-0 end-0 p-3" style="z-index: 11">
+        <div id="toast" class="toast" role="alert">
+            <div class="toast-header">
+                <strong class="me-auto" id="toastTitle">Thông báo</strong>
+                <button type="button" class="btn-close" data-bs-dismiss="toast"></button>
+            </div>
+            <div class="toast-body" id="toastBody"></div>
+        </div>
+    </div>
+
+    <!-- Copy Modal -->
+    <div class="modal fade" id="copyModal" tabindex="-1">
+        <div class="modal-dialog modal-sm">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h6 class="modal-title fw-bold">Copy Recipe</h6>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <label class="form-label small fw-bold">Mã phối phương mới:</label>
+                    <input type="text" id="txtCopyTarget" class="form-control form-control-sm">
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                    <button type="button" class="btn btn-sm btn-primary" id="btnCopyConfirm">Copy</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/bootstrap.bundle.min.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>
