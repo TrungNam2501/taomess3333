@@ -274,19 +274,37 @@
 
     <!-- Copy Modal -->
     <div class="modal fade" id="copyModal" tabindex="-1">
-        <div class="modal-dialog modal-sm">
+        <div class="modal-dialog">
             <div class="modal-content">
-                <div class="modal-header">
+                <div class="modal-header bg-primary text-white py-2">
                     <h6 class="modal-title fw-bold">Copy Recipe</h6>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
-                    <label class="form-label small fw-bold">Mã phối phương mới:</label>
-                    <input type="text" id="txtCopyTarget" class="form-control form-control-sm">
+                    <div class="row g-2 mb-3">
+                        <div class="col-6">
+                            <label class="form-label small fw-bold">配方编号 Mã vật liệu</label>
+                            <input type="text" id="txtCopyCode" class="form-control form-control-sm fw-bold">
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label small fw-bold">配方名称 Tên vật liệu</label>
+                            <input type="text" id="txtCopyName" class="form-control form-control-sm fw-bold">
+                        </div>
+                    </div>
+                    <label class="form-label small fw-bold">Chọn máy đích:</label>
+                    <div class="row g-2">
+                        <div class="col-auto"><div class="form-check"><input type="checkbox" class="form-check-input copy-machine" value="01" id="cpM01"><label class="form-check-label small fw-bold" for="cpM01">V-BB3701</label></div></div>
+                        <div class="col-auto"><div class="form-check"><input type="checkbox" class="form-check-input copy-machine" value="02" id="cpM02"><label class="form-check-label small fw-bold" for="cpM02">V-BB3702</label></div></div>
+                        <div class="col-auto"><div class="form-check"><input type="checkbox" class="form-check-input copy-machine" value="03" id="cpM03"><label class="form-check-label small fw-bold" for="cpM03">V-BB3703</label></div></div>
+                        <div class="col-auto"><div class="form-check"><input type="checkbox" class="form-check-input copy-machine" value="04" id="cpM04"><label class="form-check-label small fw-bold" for="cpM04">V-BB3704</label></div></div>
+                        <div class="col-auto"><div class="form-check"><input type="checkbox" class="form-check-input copy-machine" value="05" id="cpM05"><label class="form-check-label small fw-bold" for="cpM05">V-BB3705</label></div></div>
+                        <div class="col-auto"><div class="form-check"><input type="checkbox" class="form-check-input copy-machine" value="06" id="cpM06"><label class="form-check-label small fw-bold" for="cpM06">V-BB3706</label></div></div>
+                        <div class="col-auto"><div class="form-check"><input type="checkbox" class="form-check-input copy-machine" value="07" id="cpM07"><label class="form-check-label small fw-bold" for="cpM07">V-BB3707</label></div></div>
+                    </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">Hủy</button>
-                    <button type="button" class="btn btn-sm btn-primary" id="btnCopyConfirm">Copy</button>
+                    <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">Đóng</button>
+                    <button type="button" class="btn btn-sm btn-danger fw-bold" id="btnCopyConfirm">Copy</button>
                 </div>
             </div>
         </div>

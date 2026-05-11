@@ -436,23 +436,38 @@ $('btnSave').addEventListener('click', async function () {
 // Event: Copy
 $('btnCopy').addEventListener('click', function () {
     const modal = new bootstrap.Modal($('copyModal'));
-    $('txtCopyTarget').value = '';
+    const currentKeo = $('cbKeo').value;
+    $('txtCopyCode').value = currentKeo;
+    $('txtCopyName').value = currentKeo;
+    document.querySelectorAll('.copy-machine').forEach(cb => cb.checked = false);
     modal.show();
 });
 
 $('btnCopyConfirm').addEventListener('click', async function () {
-    const target = $('txtCopyTarget').value.trim();
-    if (!target) {
-        showToast('Vui lòng nhập mã phối phương mới!', 'error');
+    const targetCode = $('txtCopyCode').value.trim();
+    const targetName = $('txtCopyName').value.trim();
+    if (!targetCode) {
+        showToast('Vui lòng nhập mã vật liệu!', 'error');
         return;
     }
-    const machine = $('cbMay').value;
-    const source = $('cbKeo').value;
+    const selectedMachines = [];
+    document.querySelectorAll('.copy-machine:checked').forEach(cb => {
+        selectedMachines.push(cb.value);
+    });
+    if (selectedMachines.length === 0) {
+        showToast('Vui lòng chọn ít nhất 1 máy!', 'error');
+        return;
+    }
+
+    const sourceMachine = $('cbMay').value;
+    const sourceKeo = $('cbKeo').value;
 
     const result = await apiPost('/api/recipe/copy', {
-        machine,
-        source_keo: source,
-        target_keo: target
+        source_machine: sourceMachine,
+        source_keo: sourceKeo,
+        target_code: targetCode,
+        target_name: targetName,
+        target_machines: selectedMachines
     });
 
     if (result && result.success) {
