@@ -8,6 +8,12 @@ let terms = [];
 let editMode = false;
 let isNewRecipe = false;
 
+// Table index → actual weigh_type in database (matches old WebForms code)
+const WEIGH_TYPE_MAP = [0, 1, 7, 3, 5, 8, 2, 6];
+// tblWeigh0=炭黑(type0), tblWeigh1=油11(type1), tblWeigh2=油14(type7),
+// tblWeigh3=粉料(type3), tblWeigh4=油12(type5), tblWeigh5=油15(type8),
+// tblWeigh6=胶料(type2,no act_code), tblWeigh7=油13(type6)
+
 const $ = id => document.getElementById(id);
 const setStatus = (msg, loading) => {
     const el = $('statusIndicator');
@@ -56,7 +62,7 @@ async function apiPost(path, body) {
 }
 
 // Build weighing table rows
-function buildWeighTable(tableId, weighType, data) {
+function buildWeighTable(tableId, weighType, data, noActCode) {
     const tbody = document.querySelector(`#${tableId} tbody`);
     tbody.innerHTML = '';
     const filtered = data.filter(r => String(r.weigh_type).trim() === String(weighType));
@@ -64,21 +70,34 @@ function buildWeighTable(tableId, weighType, data) {
     for (let i = 0; i < ROWS; i++) {
         const row = filtered[i] || {};
         const tr = document.createElement('tr');
-        tr.innerHTML = `
-            <td>${i + 1}</td>
-            <td><select class="act-code" ${editMode ? '' : 'disabled'}>
-                <option value="1"></option>
-                <option value="0" ${row.act_code == '0' ? 'selected' : ''}>称里-Cân</option>
-                <option value="2" ${row.act_code == '2' ? 'selected' : ''}>卸料-Xả</option>
-            </select></td>
-            <td><select class="child-name" ${editMode ? '' : 'disabled'}>
-                <option value=""></option>
-                ${materials.map(m => `<option ${m.code?.trim() === (row.child_name || '').trim() ? 'selected' : ''}>${m.code?.trim() || ''}</option>`).join('')}
-            </select></td>
-            <td><input type="text" class="child-code" value="${(row.child_code || '').trim()}" ${editMode ? '' : 'disabled'}></td>
-            <td><input type="number" class="set-weight" value="${(row.set_weight || '').toString().trim()}" ${editMode ? '' : 'disabled'}></td>
-            <td><input type="number" class="error-allow" value="${(row.error_allow || '').toString().trim()}" ${editMode ? '' : 'disabled'}></td>
-        `;
+        if (noActCode) {
+            tr.innerHTML = `
+                <td>${i + 1}</td>
+                <td><select class="child-name" ${editMode ? '' : 'disabled'}>
+                    <option value=""></option>
+                    ${materials.map(m => `<option ${m.code?.trim() === (row.child_name || '').trim() ? 'selected' : ''}>${m.code?.trim() || ''}</option>`).join('')}
+                </select></td>
+                <td><input type="text" class="child-code" value="${(row.child_code || '').trim()}" ${editMode ? '' : 'disabled'}></td>
+                <td><input type="number" class="set-weight" value="${(row.set_weight || '').toString().trim()}" ${editMode ? '' : 'disabled'}></td>
+                <td><input type="number" class="error-allow" value="${(row.error_allow || '').toString().trim()}" ${editMode ? '' : 'disabled'}></td>
+            `;
+        } else {
+            tr.innerHTML = `
+                <td>${i + 1}</td>
+                <td><select class="act-code" ${editMode ? '' : 'disabled'}>
+                    <option value="1"></option>
+                    <option value="0" ${row.act_code == '0' ? 'selected' : ''}>称里-Cân</option>
+                    <option value="2" ${row.act_code == '2' ? 'selected' : ''}>卸料-Xả</option>
+                </select></td>
+                <td><select class="child-name" ${editMode ? '' : 'disabled'}>
+                    <option value=""></option>
+                    ${materials.map(m => `<option ${m.code?.trim() === (row.child_name || '').trim() ? 'selected' : ''}>${m.code?.trim() || ''}</option>`).join('')}
+                </select></td>
+                <td><input type="text" class="child-code" value="${(row.child_code || '').trim()}" ${editMode ? '' : 'disabled'}></td>
+                <td><input type="number" class="set-weight" value="${(row.set_weight || '').toString().trim()}" ${editMode ? '' : 'disabled'}></td>
+                <td><input type="number" class="error-allow" value="${(row.error_allow || '').toString().trim()}" ${editMode ? '' : 'disabled'}></td>
+            `;
+        }
         tr.dataset.weightId = row.weight_id || (i + 1);
         tr.dataset.weighType = weighType;
         tbody.appendChild(tr);
@@ -195,31 +214,50 @@ let currentMixData = [];
 
 function reloadCurrentData() {
     for (let i = 0; i < 8; i++) {
-        buildWeighTable('tblWeigh' + i, i, currentWeighData);
+        const dbType = WEIGH_TYPE_MAP[i];
+        const noActCode = (i === 6); // tblWeigh6 (胶料) has no act_code column
+        buildWeighTable('tblWeigh' + i, dbType, currentWeighData, noActCode);
     }
     buildMixTable(currentMixData);
 }
 
 function collectWeighData() {
     const result = [];
-    for (let type = 0; type < 8; type++) {
-        const rows = document.querySelectorAll(`#tblWeigh${type} tbody tr`);
+    for (let tableIdx = 0; tableIdx < 8; tableIdx++) {
+        const dbType = WEIGH_TYPE_MAP[tableIdx];
+        const noActCode = (tableIdx === 6);
+        const rows = document.querySelectorAll(`#tblWeigh${tableIdx} tbody tr`);
         rows.forEach((tr, idx) => {
-            const actCode = tr.querySelector('.act-code').value;
+            const actCodeEl = tr.querySelector('.act-code');
+            const actCode = actCodeEl ? actCodeEl.value : '';
             const childName = tr.querySelector('.child-name').value;
             const childCode = tr.querySelector('.child-code').value;
             const setWeight = tr.querySelector('.set-weight').value;
             const errorAllow = tr.querySelector('.error-allow').value;
-            if (actCode !== '1' && (childName || setWeight)) {
-                result.push({
-                    weight_id: idx + 1,
-                    child_name: childName,
-                    child_code: childCode,
-                    set_weight: setWeight || '0',
-                    error_allow: errorAllow || '0',
-                    weigh_type: String(type),
-                    act_code: actCode
-                });
+            if (noActCode) {
+                if (childName) {
+                    result.push({
+                        weight_id: idx + 1,
+                        child_name: childName,
+                        child_code: childCode,
+                        set_weight: setWeight || '0',
+                        error_allow: errorAllow || '0',
+                        weigh_type: String(dbType),
+                        act_code: ''
+                    });
+                }
+            } else {
+                if (actCode !== '1' && (childName || setWeight)) {
+                    result.push({
+                        weight_id: idx + 1,
+                        child_name: childName,
+                        child_code: childCode,
+                        set_weight: setWeight || '0',
+                        error_allow: errorAllow || '0',
+                        weigh_type: String(dbType),
+                        act_code: actCode
+                    });
+                }
             }
         });
     }
