@@ -267,34 +267,67 @@ app.MapPost("/api/recipe/save", async (HttpRequest request) =>
     return result >= 0 ? Results.Ok(new { success = true, message = "Lưu thành công!" }) : Results.Ok(new { success = false, message = "Lỗi khi lưu!" });
 });
 
-// POST /api/recipe/copy - copy recipe to another code
+// POST /api/recipe/copy - copy recipe to multiple target machines
 app.MapPost("/api/recipe/copy", async (HttpRequest request) =>
 {
     var body = await JsonSerializer.DeserializeAsync<JsonElement>(request.Body);
-    var machine = body.GetProperty("machine").GetString()!;
+    var sourceMachine = body.GetProperty("source_machine").GetString()!;
     var sourceKeo = body.GetProperty("source_keo").GetString()!.Replace("'", "''");
-    var targetKeo = body.GetProperty("target_keo").GetString()!.Replace("'", "''");
+    var targetCode = body.GetProperty("target_code").GetString()!.Replace("'", "''");
+    var targetName = body.GetProperty("target_name").GetString()!.Replace("'", "''");
+    var targetMachines = body.GetProperty("target_machines");
 
-    if (!machineIPs.TryGetValue(machine, out var ip))
-        return Results.BadRequest("Invalid machine code");
+    if (!machineIPs.TryGetValue(sourceMachine, out var sourceIp))
+        return Results.BadRequest("Invalid source machine code");
 
-    // Copy recipe
-    var copySql = $@"INSERT INTO [pmt_recipe] (mater_code, mater_name, mini_temp, max_temp, RecipeType, mini_time, over_temp, black_reuse, reuse_time, ThreeTemp1, ThreeTemp2, ThreeTemp3, ThreeTemp4, tablettingtemp, define_date, ever_used, mem_note)
-        SELECT '{targetKeo}', mater_name, mini_temp, max_temp, RecipeType, mini_time, over_temp, black_reuse, reuse_time, ThreeTemp1, ThreeTemp2, ThreeTemp3, ThreeTemp4, tablettingtemp, GETDATE(), ever_used, mem_note
-        FROM [pmt_recipe] WHERE mater_code='{sourceKeo}'";
-    await ExecuteAsync(ip, copySql);
+    // Read source data once
+    var recipeData = await QueryAsync(sourceIp, $"SELECT mini_temp,max_temp,RecipeType,mini_time,over_temp,black_reuse,reuse_time,ThreeTemp1,ThreeTemp2,ThreeTemp3,ThreeTemp4,tablettingtemp,ever_used,mem_note FROM [pmt_recipe] WHERE mater_code='{sourceKeo}'");
+    var weighData = await QueryAsync(sourceIp, $"SELECT weight_id,scale_code,weigh_type,act_code,child_code,child_name,set_weight,error_allow FROM [pmt_weigh] WHERE father_code='{sourceKeo}'");
+    var mixData = await QueryAsync(sourceIp, $"SELECT mix_id,act_code,set_time,set_temp,set_ener,set_power,term_code,set_pres,set_rota FROM pmt_mix WHERE father_code='{sourceKeo}'");
 
-    // Copy weigh
-    var copyWeigh = $@"INSERT INTO [pmt_weigh] SELECT weight_id, '{targetKeo}', machine_code, scale_code, weigh_type, act_code, child_code, child_name, set_weight, error_allow, null, null
-        FROM [pmt_weigh] WHERE father_code='{sourceKeo}'";
-    await ExecuteAsync(ip, copyWeigh);
+    if (recipeData.Count == 0)
+        return Results.Ok(new { success = false, message = "Không tìm thấy recipe nguồn!" });
 
-    // Copy mix
-    var copyMix = $@"INSERT INTO pmt_mix SELECT mix_id, '{targetKeo}', machine_code, act_code, set_time, set_temp, set_ener, set_power, term_code, set_pres, set_rota
-        FROM pmt_mix WHERE father_code='{sourceKeo}'";
-    await ExecuteAsync(ip, copyMix);
+    var r = recipeData[0];
+    int successCount = 0;
 
-    return Results.Ok(new { success = true, message = "Copy thành công!" });
+    foreach (var tm in targetMachines.EnumerateArray())
+    {
+        var targetMachineCode = tm.GetString()!;
+        if (!machineIPs.TryGetValue(targetMachineCode, out var targetIp))
+            continue;
+
+        // Delete existing target recipe if exists
+        await ExecuteAsync(targetIp, $"DELETE FROM [pmt_recipe] WHERE mater_code='{targetCode}'");
+        await ExecuteAsync(targetIp, $"DELETE FROM [pmt_weigh] WHERE father_code='{targetCode}'");
+        await ExecuteAsync(targetIp, $"DELETE FROM pmt_mix WHERE father_code='{targetCode}'");
+
+        // Insert recipe
+        var memNote = (r["mem_note"]?.ToString() ?? "").Replace("'", "''");
+        var insRecipe = $@"INSERT INTO [pmt_recipe] (mater_code,mater_name,mini_temp,max_temp,RecipeType,mini_time,over_temp,black_reuse,reuse_time,ThreeTemp1,ThreeTemp2,ThreeTemp3,ThreeTemp4,tablettingtemp,define_date,ever_used,mem_note)
+            VALUES('{targetCode}','{targetName}',{r["mini_temp"] ?? 0},{r["max_temp"] ?? 0},{r["RecipeType"] ?? 0},{r["mini_time"] ?? 0},{r["over_temp"] ?? 0},{r["black_reuse"] ?? 0},{r["reuse_time"] ?? 0},{r["ThreeTemp1"] ?? 0},{r["ThreeTemp2"] ?? 0},{r["ThreeTemp3"] ?? 0},{r["ThreeTemp4"] ?? 0},{r["tablettingtemp"] ?? 0},GETDATE(),{r["ever_used"] ?? 0},'{memNote}')";
+        await ExecuteAsync(targetIp, insRecipe);
+
+        // Insert weigh data
+        foreach (var w in weighData)
+        {
+            var childCode = (w["child_code"]?.ToString() ?? "").Replace("'", "''");
+            var childName = (w["child_name"]?.ToString() ?? "").Replace("'", "''");
+            var insWeigh = $@"INSERT INTO [pmt_weigh] VALUES({w["weight_id"]},'{targetCode}','{targetMachineCode}','{w["scale_code"]}','{w["weigh_type"]}','{w["act_code"]}','{childCode}','{childName}',{w["set_weight"] ?? 0},{w["error_allow"] ?? 0},null,null)";
+            await ExecuteAsync(targetIp, insWeigh);
+        }
+
+        // Insert mix data
+        foreach (var m in mixData)
+        {
+            var insMix = $@"INSERT INTO pmt_mix VALUES({m["mix_id"]},'{targetCode}','{targetMachineCode}','{m["act_code"]}',{m["set_time"] ?? 0},{m["set_temp"] ?? 0},{m["set_ener"] ?? 0},{m["set_power"] ?? 0},{m["term_code"] ?? 0},{m["set_pres"] ?? 0},{m["set_rota"] ?? 0})";
+            await ExecuteAsync(targetIp, insMix);
+        }
+
+        successCount++;
+    }
+
+    return Results.Ok(new { success = successCount > 0, message = $"Copy thành công sang {successCount} máy!" });
 });
 
 app.MapFallbackToFile("index.html");
