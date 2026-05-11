@@ -88,15 +88,15 @@ body {
 }
 
 #tblMix input {
-    width: 70px;
+    width: 80px;
 }
 
-#tblMix select {
-    width: 180px;
+#tblMix .mix-act {
+    width: 240px;
 }
 
 #tblMix .term-code {
-    width: 200px;
+    width: 280px;
 }
 
 .nav-tabs .nav-link {

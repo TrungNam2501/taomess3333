@@ -104,6 +104,10 @@ function buildWeighTable(tableId, weighType, data, noActCode) {
     }
 }
 
+// Format helpers matching old app display
+function fmtInt(v) { const n = parseFloat(v); return isNaN(n) ? '' : String(Math.round(n)); }
+function fmtDec(v) { const n = parseFloat(v); return isNaN(n) ? '' : n.toFixed(5); }
+
 // Build mix table
 function buildMixTable(data) {
     const tbody = document.querySelector('#tblMix tbody');
@@ -111,6 +115,7 @@ function buildMixTable(data) {
 
     for (let i = 0; i < ROWS; i++) {
         const row = data[i] || {};
+        const hasData = row.act_code || row.set_time || row.set_temp;
         const tr = document.createElement('tr');
         tr.innerHTML = `
             <td>${i + 1}</td>
@@ -118,16 +123,16 @@ function buildMixTable(data) {
                 <option value=""></option>
                 ${actions.map(a => `<option value="${a.act_code}" ${String(a.act_code).trim() === String(row.act_code || '').trim() ? 'selected' : ''}>${(a.act_name || '').trim()}</option>`).join('')}
             </select></td>
-            <td><input type="number" class="set-time" value="${(row.set_time || '').toString().trim()}" ${editMode ? '' : 'disabled'}></td>
-            <td><input type="number" class="set-temp" value="${(row.set_temp || '').toString().trim()}" ${editMode ? '' : 'disabled'}></td>
-            <td><input type="number" class="set-power" value="${(row.set_power || '').toString().trim()}" ${editMode ? '' : 'disabled'}></td>
-            <td><input type="number" class="set-ener" value="${(row.set_ener || '').toString().trim()}" ${editMode ? '' : 'disabled'}></td>
+            <td><input type="text" class="set-time" value="${hasData ? fmtInt(row.set_time || 0) : ''}" ${editMode ? '' : 'disabled'}></td>
+            <td><input type="text" class="set-temp" value="${hasData ? fmtInt(row.set_temp || 0) : ''}" ${editMode ? '' : 'disabled'}></td>
+            <td><input type="text" class="set-power" value="${hasData ? fmtDec(row.set_power || 0) : ''}" ${editMode ? '' : 'disabled'}></td>
+            <td><input type="text" class="set-ener" value="${hasData ? fmtDec(row.set_ener || 0) : ''}" ${editMode ? '' : 'disabled'}></td>
             <td><select class="term-code" ${editMode ? '' : 'disabled'}>
                 <option value=""></option>
                 ${terms.map(t => `<option value="${t.term_code}" ${String(t.term_code).trim() === String(row.term_code || '').trim() ? 'selected' : ''}>${(t.term_name || '').trim()}</option>`).join('')}
             </select></td>
-            <td><input type="number" class="set-pres" value="${(row.set_pres || '').toString().trim()}" ${editMode ? '' : 'disabled'}></td>
-            <td><input type="number" class="set-rota" value="${(row.set_rota || '').toString().trim()}" ${editMode ? '' : 'disabled'}></td>
+            <td><input type="text" class="set-pres" value="${hasData ? fmtDec(row.set_pres || 0) : ''}" ${editMode ? '' : 'disabled'}></td>
+            <td><input type="text" class="set-rota" value="${hasData ? fmtInt(row.set_rota || 0) : ''}" ${editMode ? '' : 'disabled'}></td>
         `;
         tbody.appendChild(tr);
     }
